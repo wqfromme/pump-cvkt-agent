@@ -1,0 +1,19 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "regions": ["iad1"],
+  "env": {
+    "SOLANA_RPC_URL": "@solana_rpc_url",
+    "AGENT_TOKEN_MINT_ADDRESS": "@agent_token_mint_address",
+    "CURRENCY_MINT": "@currency_mint",
+    "PRICE_MIN_LAMPORTS": "@price_min_lamports",
+    "PRICE_MAX_LAMPORTS": "@price_max_lamports",
+    "ANTHROPIC_API_KEY": "@anthropic_api_key"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_SOLANA_RPC_URL": "@next_public_solana_rpc_url"
+    }
+  }
+}

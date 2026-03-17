@@ -179,7 +179,6 @@ export default function AgentUI() {
           <span>·</span>
           <a href="https://x.com/i/communities/2033286407817515155" target="_blank" rel="noopener noreferrer">𝕏 Community</a>
           <span>·</span>
-          <a href="https://pump.fun" target="_blank" rel="noopener noreferrer">pump.fun</a>
         </div>
       </footer>
       <style jsx global>{`

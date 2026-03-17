@@ -121,7 +121,7 @@ export default function AgentUI() {
           </svg>
         </div>
         <h1>Charmander Agent</h1>
-        <p className="tagline">🔥 0.10 – 0.50 SOL per battle · Powered by pump.fun</p>
+        <p className="tagline">🔥 0.01 SOL per battle · Powered by pump.fun</p>
         <div className="wallet-row"><WalletMultiButton /></div>
       </header>
 

@@ -173,10 +173,15 @@ export default function AgentUI() {
       </div>
 
       <footer className="footer">
-        Charmander #004 · Solana mainnet-beta ·{" "}
-        <a href="https://pump.fun" target="_blank" rel="noopener noreferrer">pump.fun</a>
+        Charmander #004 · Solana mainnet-beta
+        <div className="footer-links">
+          <a href="https://pump.fun/coin/CVKT5ixEzwZm5CHFU7EeLfzxTSEF6GV2oJ3GevkZpump" target="_blank" rel="noopener noreferrer">🔥 Buy CVKT</a>
+          <span>·</span>
+          <a href="https://x.com/i/communities/2033286407817515155" target="_blank" rel="noopener noreferrer">𝕏 Community</a>
+          <span>·</span>
+          <a href="https://pump.fun" target="_blank" rel="noopener noreferrer">pump.fun</a>
+        </div>
       </footer>
-
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }

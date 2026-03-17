@@ -5,13 +5,7 @@ import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { signAndSendPayment } from "@/lib/client-payments";
 
-type Stage =
-  | "idle"
-  | "building"
-  | "signing"
-  | "verifying"
-  | "done"
-  | "error";
+type Stage = "idle" | "building" | "signing" | "verifying" | "done" | "error";
 
 interface Invoice {
   amount: string;
@@ -22,25 +16,24 @@ interface Invoice {
 }
 
 const STAGE_MESSAGES: Partial<Record<Stage, string>> = {
-  building:  "Building transaction…",
-  signing:   "Waiting for wallet approval…",
-  verifying: "Verifying payment on-chain…",
+  building:  "Charmander is warming up…",
+  signing:   "Waiting for trainer approval…",
+  verifying: "Verifying on-chain…",
 };
 
 export default function AgentUI() {
   const { publicKey, signTransaction } = useWallet();
   const { connection } = useConnection();
 
-  const [prompt, setPrompt]   = useState("");
-  const [stage, setStage]     = useState<Stage>("idle");
-  const [invoice, setInvoice] = useState<Invoice | null>(null);
+  const [prompt, setPrompt]     = useState("");
+  const [stage, setStage]       = useState<Stage>("idle");
+  const [invoice, setInvoice]   = useState<Invoice | null>(null);
   const [response, setResponse] = useState<string | null>(null);
-  const [txSig, setTxSig]     = useState<string | null>(null);
-  const [error, setError]     = useState<string | null>(null);
+  const [txSig, setTxSig]       = useState<string | null>(null);
+  const [error, setError]       = useState<string | null>(null);
 
   const busy = !["idle", "done", "error"].includes(stage);
 
-  // ── Single action: build tx → sign → verify → deliver ───────────────────
   async function handlePay() {
     if (!publicKey || !signTransaction) return;
     setStage("building");
@@ -50,7 +43,6 @@ export default function AgentUI() {
     setTxSig(null);
 
     try {
-      // Build transaction server-side
       const res = await fetch("/api/build-transaction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,12 +52,10 @@ export default function AgentUI() {
       const { transaction, invoice: inv } = await res.json();
       setInvoice(inv);
 
-      // Sign & send immediately
       setStage("signing");
       const sig = await signAndSendPayment(transaction, signTransaction, connection);
       setTxSig(sig);
 
-      // Verify on-chain then deliver
       setStage("verifying");
       const verifyRes = await fetch("/api/verify-payment", {
         method: "POST",
@@ -100,394 +90,152 @@ export default function AgentUI() {
 
   return (
     <main className="root">
-      <div className="bg-grid" />
+      <div className="fire-bg">
+        <div className="ember e1" /><div className="ember e2" /><div className="ember e3" />
+        <div className="ember e4" /><div className="ember e5" /><div className="ember e6" />
+      </div>
 
-      {/* ── Header ── */}
       <header className="header">
-        <span className="hex">⬡</span>
-        <h1>CVKT Agent</h1>
-        <p className="tagline">AI answers · 0.10 – 0.50 SOL per request</p>
-        <div className="wallet-row">
-          <WalletMultiButton />
+        <div className="charmander">
+          <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" width="100" height="100">
+            <ellipse cx="40" cy="50" rx="18" ry="20" fill="#FF6B35"/>
+            <ellipse cx="40" cy="53" rx="11" ry="13" fill="#FFCC99"/>
+            <circle cx="40" cy="28" r="16" fill="#FF6B35"/>
+            <circle cx="34" cy="25" r="4" fill="white"/>
+            <circle cx="46" cy="25" r="4" fill="white"/>
+            <circle cx="35" cy="26" r="2.5" fill="#1a1a2e"/>
+            <circle cx="47" cy="26" r="2.5" fill="#1a1a2e"/>
+            <circle cx="35.8" cy="25.2" r="1" fill="white"/>
+            <circle cx="47.8" cy="25.2" r="1" fill="white"/>
+            <circle cx="38" cy="30" r="1" fill="#cc4400"/>
+            <circle cx="42" cy="30" r="1" fill="#cc4400"/>
+            <path d="M36 33 Q40 37 44 33" stroke="#cc4400" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+            <ellipse cx="22" cy="48" rx="5" ry="8" fill="#FF6B35" transform="rotate(-20 22 48)"/>
+            <ellipse cx="58" cy="48" rx="5" ry="8" fill="#FF6B35" transform="rotate(20 58 48)"/>
+            <ellipse cx="32" cy="68" rx="6" ry="8" fill="#FF6B35"/>
+            <ellipse cx="48" cy="68" rx="6" ry="8" fill="#FF6B35"/>
+            <path d="M58 62 Q72 55 68 42 Q65 35 70 28" stroke="#FF6B35" strokeWidth="7" fill="none" strokeLinecap="round"/>
+            <ellipse cx="71" cy="24" rx="5" ry="8" fill="#FFD700" transform="rotate(15 71 24)"/>
+            <ellipse cx="71" cy="24" rx="3" ry="5" fill="#FF8C00" transform="rotate(15 71 24)"/>
+            <ellipse cx="71" cy="26" rx="1.5" ry="3" fill="#FF4500" transform="rotate(15 71 24)"/>
+          </svg>
         </div>
+        <h1>Charmander Agent</h1>
+        <p className="tagline">🔥 0.10 – 0.50 SOL per battle · Powered by pump.fun</p>
+        <div className="wallet-row"><WalletMultiButton /></div>
       </header>
 
-      {/* ── Card ── */}
       <div className="card">
-
-        {/* Prompt input */}
-        <label className="field-label" htmlFor="prompt">Your question</label>
+        <label className="field-label" htmlFor="prompt">⚔️ Your challenge</label>
         <textarea
           id="prompt"
           className="textarea"
           rows={4}
-          placeholder="Ask anything — or leave blank for a Solana insight."
+          placeholder="Ask Charmander anything… or leave blank for a fire-type insight!"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          disabled={busy || stage === "building"}
+          disabled={busy}
         />
 
-        {/* ── Idle / Error: single Pay button ── */}
         {(stage === "idle" || stage === "error") && (
-          <button
-            className="btn btn-primary"
-            onClick={handlePay}
-            disabled={!publicKey}
-          >
-            {!publicKey ? "Connect wallet first" : "Pay & run →"}
+          <button className="btn btn-primary" onClick={handlePay} disabled={!publicKey}>
+            {!publicKey ? "Connect wallet, Trainer!" : "🔥 Use Fire Attack →"}
           </button>
         )}
 
-        {/* ── Busy spinner ── */}
-        {busy && stage !== "building" && (
+        {busy && (
           <div className="status">
-            <span className="spinner" />
+            <span className="flame-spinner">🔥</span>
             {STAGE_MESSAGES[stage]}
           </div>
         )}
 
-        {/* ── Error ── */}
         {stage === "error" && error && (
-          <div className="alert-error">
-            <strong>Error:</strong> {error}
-          </div>
+          <div className="alert-error"><strong>💀 Charmander fainted!</strong> {error}</div>
         )}
 
-        {/* ── Done ── */}
         {stage === "done" && response && (
           <div className="result">
             <div className="result-header">
-              <span className="check">✓</span>
-              <span>Response</span>
+              <span>🏆</span>
+              <span>Charmander used FLAMETHROWER!</span>
               {txSig && (
-                <a
-                  className="tx-link"
-                  href={`https://solscan.io/tx/${txSig}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+                <a className="tx-link" href={`https://solscan.io/tx/${txSig}`} target="_blank" rel="noopener noreferrer">
                   View tx ↗
                 </a>
               )}
             </div>
+            {invoice && <div className="price-badge">Paid {invoice.priceSol} SOL</div>}
             <p className="result-body">{response}</p>
-            <button className="btn btn-ghost" onClick={reset}>
-              Ask another
-            </button>
+            <button className="btn btn-ghost" onClick={reset}>↩ Fight again</button>
           </div>
         )}
       </div>
 
       <footer className="footer">
-        Powered by{" "}
-        <a href="https://pump.fun" target="_blank" rel="noopener noreferrer">
-          pump.fun
-        </a>{" "}
-        · Solana mainnet-beta
+        Charmander #004 · Solana mainnet-beta ·{" "}
+        <a href="https://pump.fun" target="_blank" rel="noopener noreferrer">pump.fun</a>
       </footer>
 
-      {/* ── Styles ── */}
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bricolage+Grotesque:wght@400;600;800&display=swap');
-
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;600;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         :root {
-          --bg:        #07080f;
-          --surface:   #0d0f1c;
-          --border:    #1a1d2e;
-          --accent:    #5dffa0;
-          --accent2:   #5d9fff;
-          --text:      #e2e4f0;
-          --muted:     #505570;
-          --error:     #ff6b6b;
-          --radius:    14px;
-          --ff-head:   'Bricolage Grotesque', sans-serif;
-          --ff-mono:   'DM Mono', monospace;
+          --bg: #1a0a00; --surface: #2d1200; --border: #8B3A00;
+          --orange: #FF6B35; --yellow: #FFD700; --red: #FF4500;
+          --cream: #FFCC99; --text: #FFE8CC; --muted: #996633;
+          --error: #ff4444; --radius: 12px;
+          --ff-pixel: 'Press Start 2P', monospace;
+          --ff-body: 'Nunito', sans-serif;
         }
-
-        html, body { background: var(--bg); color: var(--text); font-family: var(--ff-head); min-height: 100vh; }
-
-        .root {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 2.5rem 1rem 5rem;
-          position: relative;
-          overflow: hidden;
-        }
-
-        /* subtle grid background */
-        .bg-grid {
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          z-index: 0;
-          background-image:
-            linear-gradient(rgba(93,255,160,0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(93,255,160,0.03) 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
-
+        html, body { background: var(--bg); color: var(--text); font-family: var(--ff-body); min-height: 100vh; }
+        .root { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 5rem; position: relative; overflow: hidden; }
+        .fire-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(ellipse at 50% 100%, rgba(255,107,53,0.15) 0%, transparent 70%); }
+        .ember { position: absolute; bottom: -20px; width: 8px; height: 8px; border-radius: 50% 50% 30% 30%; animation: rise linear infinite; opacity: 0; }
+        .e1 { left: 10%; animation-duration: 4s;   animation-delay: 0s;   width: 6px;  height: 6px;  background: var(--orange); }
+        .e2 { left: 25%; animation-duration: 5s;   animation-delay: 1s;   width: 10px; height: 10px; background: var(--yellow); }
+        .e3 { left: 45%; animation-duration: 3.5s; animation-delay: 2s;   width: 5px;  height: 5px;  background: var(--red); }
+        .e4 { left: 60%; animation-duration: 4.5s; animation-delay: 0.5s; width: 8px;  height: 8px;  background: var(--orange); }
+        .e5 { left: 75%; animation-duration: 5.5s; animation-delay: 1.5s; width: 6px;  height: 6px;  background: var(--yellow); }
+        .e6 { left: 88%; animation-duration: 3.8s; animation-delay: 2.5s; width: 9px;  height: 9px;  background: var(--red); }
+        @keyframes rise { 0% { transform: translateY(0) scale(1); opacity: 0; } 10% { opacity: 1; } 80% { opacity: 0.6; } 100% { transform: translateY(-100vh) translateX(30px) scale(0); opacity: 0; } }
         .root > * { position: relative; z-index: 1; }
-
-        /* ── Header ── */
-        .header {
-          text-align: center;
-          margin-bottom: 2.5rem;
-          animation: fadeUp .5s ease both;
-        }
-
-        .hex {
-          display: block;
-          font-size: 2.8rem;
-          color: var(--accent);
-          filter: drop-shadow(0 0 12px var(--accent));
-          animation: glow 3s ease-in-out infinite;
-          margin-bottom: .4rem;
-        }
-
-        @keyframes glow {
-          0%,100% { filter: drop-shadow(0 0 8px var(--accent)); }
-          50%      { filter: drop-shadow(0 0 22px var(--accent)); }
-        }
-
-        .header h1 {
-          font-size: clamp(2.2rem, 6vw, 4rem);
-          font-weight: 800;
-          letter-spacing: -.03em;
-        }
-
-        .tagline {
-          font-family: var(--ff-mono);
-          font-size: .72rem;
-          color: var(--muted);
-          letter-spacing: .1em;
-          margin-top: .35rem;
-        }
-
-        .wallet-row {
-          margin-top: 1.1rem;
-          display: flex;
-          justify-content: center;
-        }
-
-        /* wallet button overrides */
-        .wallet-adapter-button {
-          font-family: var(--ff-mono) !important;
-          font-size: .72rem !important;
-          background: var(--surface) !important;
-          border: 1px solid var(--border) !important;
-          color: var(--text) !important;
-          border-radius: 10px !important;
-          padding: .45rem 1.1rem !important;
-          height: auto !important;
-          transition: border-color .2s !important;
-        }
-        .wallet-adapter-button:hover {
-          border-color: var(--accent) !important;
-          background: var(--surface) !important;
-        }
-
-        /* ── Card ── */
-        .card {
-          width: 100%;
-          max-width: 580px;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: var(--radius);
-          padding: 1.8rem;
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-          animation: fadeUp .5s .1s ease both;
-        }
-
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .field-label {
-          font-family: var(--ff-mono);
-          font-size: .66rem;
-          letter-spacing: .12em;
-          text-transform: uppercase;
-          color: var(--muted);
-        }
-
-        .textarea {
-          width: 100%;
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          color: var(--text);
-          font-family: var(--ff-head);
-          font-size: .93rem;
-          line-height: 1.6;
-          padding: .85rem 1rem;
-          resize: vertical;
-          outline: none;
-          transition: border-color .2s;
-        }
-        .textarea:focus { border-color: var(--accent); }
+        .header { text-align: center; margin-bottom: 2rem; animation: fadeUp .5s ease both; }
+        .charmander { display: flex; justify-content: center; margin-bottom: .5rem; filter: drop-shadow(0 0 16px rgba(255,107,53,0.8)); animation: charBob 2s ease-in-out infinite; }
+        @keyframes charBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .header h1 { font-family: var(--ff-pixel); font-size: clamp(1rem, 3.5vw, 1.6rem); color: var(--yellow); text-shadow: 3px 3px 0 var(--red), 6px 6px 0 rgba(0,0,0,0.3); line-height: 1.4; }
+        .tagline { font-size: .8rem; color: var(--muted); margin-top: .6rem; }
+        .wallet-row { margin-top: 1.2rem; display: flex; justify-content: center; }
+        .wallet-adapter-button { font-family: var(--ff-pixel) !important; font-size: .55rem !important; background: var(--surface) !important; border: 2px solid var(--border) !important; color: var(--yellow) !important; border-radius: 6px !important; padding: .6rem 1rem !important; height: auto !important; transition: border-color .2s, box-shadow .2s !important; }
+        .wallet-adapter-button:hover { border-color: var(--yellow) !important; box-shadow: 0 0 12px rgba(255,215,0,0.4) !important; background: var(--surface) !important; }
+        .card { width: 100%; max-width: 580px; background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); padding: 1.8rem; display: flex; flex-direction: column; gap: 1rem; box-shadow: 0 0 30px rgba(255,107,53,0.15); animation: fadeUp .5s .1s ease both; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .field-label { font-family: var(--ff-pixel); font-size: .55rem; letter-spacing: .08em; color: var(--orange); }
+        .textarea { width: 100%; background: #0d0500; border: 2px solid var(--border); border-radius: 8px; color: var(--text); font-family: var(--ff-body); font-size: .93rem; line-height: 1.6; padding: .85rem 1rem; resize: vertical; outline: none; transition: border-color .2s, box-shadow .2s; }
+        .textarea:focus { border-color: var(--orange); box-shadow: 0 0 10px rgba(255,107,53,0.3); }
         .textarea::placeholder { color: var(--muted); }
         .textarea:disabled { opacity: .45; cursor: not-allowed; }
-
-        /* ── Buttons ── */
-        .btn {
-          font-family: var(--ff-mono);
-          font-size: .75rem;
-          font-weight: 500;
-          letter-spacing: .06em;
-          text-transform: uppercase;
-          border: none;
-          border-radius: 8px;
-          padding: .8rem 1.4rem;
-          cursor: pointer;
-          transition: opacity .2s, transform .15s;
-        }
-        .btn:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
-        .btn:active:not(:disabled) { transform: translateY(0); }
+        .btn { font-family: var(--ff-pixel); font-size: .6rem; border: none; border-radius: 6px; padding: .9rem 1.4rem; cursor: pointer; transition: transform .15s, box-shadow .2s; line-height: 1.6; }
+        .btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .btn:active:not(:disabled) { transform: translateY(1px); }
         .btn:disabled { opacity: .3; cursor: not-allowed; }
-
-        .btn-primary {
-          background: var(--accent);
-          color: #07080f;
-        }
-
-        .btn-ghost {
-          background: transparent;
-          border: 1px solid var(--border);
-          color: var(--muted);
-        }
-        .btn-ghost:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); opacity: 1; }
-
-        /* ── Quote box ── */
-        .quote-box {
-          background: rgba(93,255,160,.04);
-          border: 1px solid rgba(93,255,160,.18);
-          border-radius: 10px;
-          padding: 1.2rem 1.3rem;
-          display: flex;
-          flex-direction: column;
-          gap: .5rem;
-          animation: fadeUp .3s ease both;
-        }
-
-        .quote-label {
-          font-family: var(--ff-mono);
-          font-size: .65rem;
-          letter-spacing: .12em;
-          text-transform: uppercase;
-          color: var(--muted);
-        }
-
-        .quote-price {
-          font-size: 2.4rem;
-          font-weight: 800;
-          letter-spacing: -.03em;
-          color: var(--accent);
-          line-height: 1;
-        }
-
-        .quote-sub {
-          font-family: var(--ff-mono);
-          font-size: .65rem;
-          color: var(--muted);
-        }
-
-        .quote-actions {
-          display: flex;
-          gap: .7rem;
-          margin-top: .4rem;
-          flex-wrap: wrap;
-        }
-
-        .quote-actions .btn-primary { flex: 1; }
-
-        /* ── Status ── */
-        .status {
-          display: flex;
-          align-items: center;
-          gap: .6rem;
-          font-family: var(--ff-mono);
-          font-size: .72rem;
-          color: var(--muted);
-        }
-
-        .spinner {
-          width: 13px; height: 13px;
-          border: 2px solid var(--border);
-          border-top-color: var(--accent);
-          border-radius: 50%;
-          animation: spin .7s linear infinite;
-          flex-shrink: 0;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* ── Error ── */
-        .alert-error {
-          background: rgba(255,107,107,.07);
-          border: 1px solid rgba(255,107,107,.22);
-          border-radius: 8px;
-          padding: .8rem 1rem;
-          font-size: .85rem;
-          color: var(--error);
-          line-height: 1.5;
-        }
-
-        /* ── Result ── */
-        .result {
-          background: rgba(93,159,255,.04);
-          border: 1px solid rgba(93,159,255,.16);
-          border-radius: 10px;
-          padding: 1.1rem 1.2rem;
-          display: flex;
-          flex-direction: column;
-          gap: .8rem;
-          animation: fadeUp .35s ease both;
-        }
-
-        .result-header {
-          display: flex;
-          align-items: center;
-          gap: .45rem;
-          font-family: var(--ff-mono);
-          font-size: .65rem;
-          letter-spacing: .1em;
-          text-transform: uppercase;
-          color: var(--accent2);
-        }
-
-        .check { font-size: .85rem; }
-
-        .tx-link {
-          margin-left: auto;
-          color: var(--muted);
-          text-decoration: none;
-          transition: color .2s;
-        }
-        .tx-link:hover { color: var(--accent2); }
-
-        .result-body {
-          font-size: .93rem;
-          line-height: 1.75;
-          color: var(--text);
-          white-space: pre-wrap;
-        }
-
-        /* ── Footer ── */
-        .footer {
-          margin-top: 2.5rem;
-          font-family: var(--ff-mono);
-          font-size: .66rem;
-          color: var(--muted);
-          letter-spacing: .06em;
-        }
+        .btn-primary { background: linear-gradient(135deg, var(--orange), var(--red)); color: #fff; box-shadow: 0 4px 0 #8B1A00, 0 6px 12px rgba(255,69,0,0.4); }
+        .btn-primary:hover:not(:disabled) { box-shadow: 0 6px 0 #8B1A00, 0 8px 20px rgba(255,69,0,0.5); }
+        .btn-ghost { background: transparent; border: 2px solid var(--border); color: var(--muted); }
+        .btn-ghost:hover:not(:disabled) { border-color: var(--orange); color: var(--orange); }
+        .status { display: flex; align-items: center; gap: .7rem; font-family: var(--ff-pixel); font-size: .55rem; color: var(--orange); line-height: 1.8; }
+        .flame-spinner { font-size: 1.2rem; animation: flamePulse .6s ease-in-out infinite alternate; }
+        @keyframes flamePulse { from { transform: scale(1) rotate(-5deg); } to { transform: scale(1.3) rotate(5deg); } }
+        .alert-error { background: rgba(255,68,68,.08); border: 2px solid rgba(255,68,68,.3); border-radius: 8px; padding: .9rem 1rem; font-size: .85rem; color: var(--error); line-height: 1.5; }
+        .result { background: rgba(255,107,53,.06); border: 2px solid rgba(255,107,53,.3); border-radius: 10px; padding: 1.2rem; display: flex; flex-direction: column; gap: .85rem; animation: fadeUp .35s ease both; }
+        .result-header { display: flex; align-items: center; gap: .5rem; font-family: var(--ff-pixel); font-size: .55rem; color: var(--yellow); line-height: 1.8; flex-wrap: wrap; }
+        .price-badge { display: inline-block; background: rgba(255,215,0,.12); border: 1px solid rgba(255,215,0,.3); border-radius: 20px; padding: .2rem .8rem; font-family: var(--ff-pixel); font-size: .5rem; color: var(--yellow); align-self: flex-start; }
+        .tx-link { margin-left: auto; color: var(--muted); text-decoration: none; font-family: var(--ff-body); font-size: .75rem; transition: color .2s; }
+        .tx-link:hover { color: var(--yellow); }
+        .result-body { font-size: .95rem; line-height: 1.75; color: var(--text); white-space: pre-wrap; }
+        .footer { margin-top: 2.5rem; font-family: var(--ff-pixel); font-size: .45rem; color: var(--muted); letter-spacing: .06em; line-height: 2; text-align: center; }
         .footer a { color: var(--muted); text-decoration: none; }
-        .footer a:hover { color: var(--accent); }
+        .footer a:hover { color: var(--orange); }
       `}</style>
     </main>
   );
